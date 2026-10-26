@@ -47,11 +47,12 @@ HEADERS = {
 # Otherwise these fallback rules apply; they mirror the filters used previously
 # (Phase excludes Cancel/Remove and other non-migration phases; Migration Status
 # excludes Complete, NA, Net New, TTP Cutover and Handoff to AM).
-EXCLUDE_PHASE = {"Cancel/Remove", "Cancelled", "Internal", "NA", "Data Moved to CLH", "DirectCourse"}
+EXCLUDE_PHASE = {"Cancel/Remove", "Cancelled", "Internal", "NA", "Data Moved to CLH", "DirectCourse", "REVIEW"}
 EXCLUDE_STATUS = {"Complete", "NA", "Net New", "TTP Cutover", "Handoff to AM"}
 REPORTED_STATUS = ["Complete", "Net New", "TTP Cutover"]
 EXCLUDE_CLIENT_TYPE = {"Workforce Development", "Internal MCS Site",
                        "Connect Partner", "EPM Connect", "LMS Connect", "Clinical Skills Connect"}
+ANZ_COUNTRIES = {"Australia", "New Zealand"}
 CONNECT_TYPES = {"Connect Partner", "EPM Connect", "LMS Connect", "Clinical Skills Connect"}
 ID_PLACEHOLDERS = {"", "NULL", "N/A", "NA", "NONE", "-", "NEW CUSTOMER", "TTP CUT OVER", "TTP ONLY"}
 
@@ -164,6 +165,8 @@ def main():
                  if str(r[c["phase"]] or "").strip() not in EXCLUDE_PHASE
                  and str(r[c["status"]] or "").strip() not in EXCLUDE_STATUS
                  and r[c["account"]]]
+    ex["REVIEW"] = sum(1 for r in scope if str(r[c["phase"]] or "").strip() == "REVIEW")
+    scope = [r for r in scope if str(r[c["phase"]] or "").strip() != "REVIEW"]
     ex["After filter"] = len(scope)
 
     def canceled(r):
@@ -172,6 +175,16 @@ def main():
 
     ex["Canceled"] = sum(1 for r in scope if canceled(r))
     scope = [r for r in scope if not canceled(r)]
+
+    # ANZ: Phase "ANZ TBD" or country Australia / New Zealand. Excluded from the dashboard
+    # counts and summarised separately in section 9.
+    def is_anz(r):
+        return (str(r[c["phase"]] or "").strip() == "ANZ TBD"
+                or str(r[c["country"]] or "").strip() in ANZ_COUNTRIES)
+
+    anz_rows = [r for r in scope if is_anz(r)]
+    ex["ANZ"] = len(anz_rows)
+    scope = [r for r in scope if not is_anz(r)]
     connect_rows = [r for r in scope if (r[c["client_type"]] or "").strip() in CONNECT_TYPES]
     ex["Client type"] = sum(1 for r in scope if (r[c["client_type"]] or "").strip() in EXCLUDE_CLIENT_TYPE)
     scope = [r for r in scope if (r[c["client_type"]] or "").strip() not in EXCLUDE_CLIENT_TYPE]
@@ -229,6 +242,7 @@ def main():
 
     outside = {
         "connect": summarize(connect_rows),
+        "anz": summarize(anz_rows),
         "directcourse": summarize([r for r in rows if str(r[c["phase"]] or "").strip() == "DirectCourse" and r[c["account"]]]),
     }
 

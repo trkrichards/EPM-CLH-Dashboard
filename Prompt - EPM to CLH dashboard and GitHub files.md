@@ -26,7 +26,7 @@ Columns used: Account, ECR ID, Database Name, CMX ID, Contract Value, Phase, Mig
 1. **Unit:** one record per CMX ID (one row per database). Skip blank or placeholder CMX IDs (NULL, N/A, NA, New Customer, TTP Cut Over, TTP Only). If a CMX ID repeats, keep the first.
 2. **Workbook filters:** if the main tab has Excel AutoFilter criteria set, apply exactly those (compare trimmed values; respect "blanks" being allowed).
 3. **Otherwise use these fallback rules,** which mirror the filters used previously:
-   - Exclude Phase: Cancel/Remove, Cancelled, Internal, NA, Data Moved to CLH, DirectCourse.
+   - Exclude Phase: Cancel/Remove, Cancelled, Internal, NA, Data Moved to CLH, DirectCourse, REVIEW (REVIEW is also excluded when Excel filters are used).
    - Exclude Migration Status: Complete, NA, Net New, TTP Cutover, Handoff to AM.
 4. **Also exclude:**
    - Databases marked Canceled/Cancelled under CLH Customer Account Status or Change Type.
@@ -74,7 +74,7 @@ For each database, also keep Country, SSO Eligibility and whether it is flagged 
 - Boxes that visibly add up: **[total] still to migrate = [blocked] blocked by at least one missing feature** (with "of which [N] are blocked by two or more" inside that box) **+ [not blocked] not blocked by any of the six features**. The not-blocked box has a dark left bar.
 - Directly below, a full-width note with the same dark left bar, explaining **why the not-blocked databases are not blocked by functionality**. Calculate it from Phase: how many are already in Phases 2 to 4 (with per-phase counts), and how the rest split (Phase 5, REVIEW, ANZ TBD, blank). Use this framing: databases outside Phases 2 to 4 were recently decoupled from Connect, were originally treated as multi-database, and need the Customer Evaluation Form completed before they can be migrated. Make it editable text.
 - A totals table with columns "Still to migrate", "= Blocked by at least one feature", "+ Not blocked by the six", and "Of the blocked: two or more" (shaded, last). Rows: Databases, Contract value (with recorded coverage), Active learners, Active admins.
-- "Databases able to migrate as each feature is built": a real HTML table with fixed column widths and headings aligned to their data. Columns: Build step, Built at this step, Newly able to migrate, Progress (stacked bar: grey for earlier steps, orange for this step, with a key in the heading), Total able to migrate, Share of blocked, Still blocked. Include a "Today (nothing built)" row, and a note on the Org Picker + HR Download row saying they are built together.
+- "Databases able to migrate as each feature is built": a real HTML table with fixed column widths and headings aligned to their data. Columns: Build step, Built at this step, Newly able to migrate, Progress (stacked bar: grey for earlier steps, orange for this step, with a key in the heading), Total able to migrate, Share of blocked, Still blocked. Do not include a "Today (nothing built)" row. Add a note on the Org Picker + HR Download row saying they are built together.
 
 **3. Build simulator**
 - A card for each feature (click to toggle built or not built; built cards turn orange).
@@ -85,11 +85,11 @@ For each database, also keep Country, SSO Eligibility and whether it is flagged 
 
 **4. Features needed**
 - One card per feature with the count of databases needing it. Clicking selects it for section 5.
-- Controls: "Any selected feature / All selected features", and Clear selection.
+- Selecting features shows only databases that need **every** selected feature (no any/all toggle). A total box under the cards shows the matching database count, recorded contract value, active learners and admins. Control: Clear selection.
 
 **5. Databases by selected feature**
 - Hidden until at least one feature is selected.
-- Searchable list with columns Account, Database name, CMX ID, ECR ID, Client type, Migration status, Contract value, Learners, Admins, Features needed, and feature chips.
+- Searchable list with columns Account, Database name, CMX ID, ECR ID, Client type, Migration status, Contract value, Learners, Admins, and Selected features (chips for the selected features only; other features stay hidden until selected).
 - Export CSV.
 
 **6. Databases sorted by features needed**
@@ -109,7 +109,7 @@ For each database, also keep Country, SSO Eligibility and whether it is flagged 
 
 **8. Why we count databases, not customers** (editable): the explanation of why "customer" is hard to define for EPM, with these examples: Baptist Health Corbin, Mount Sinai, VA (with its ECR-ID_a/b/c placeholder IDs), Common Spirit, NEAH and Medstar, Kaiser Permanente, plus the note that EPM and CLH customer counts will differ because databases are combined on CLH (Fortis Hospitals).
 
-**9. Databases outside this view: Connect and DirectCourse** (reference only, not counted anywhere above): a two-column table (Connect | DirectCourse) with Databases, Contract value (with recorded coverage), Active learners, Active admins, Would be blocked by the six features, and Of which by feature. Connect = Connect client types (LMS Connect, Clinical Skills Connect, EPM Connect, Connect Partner) that are still to migrate under the same scope rules. DirectCourse = databases with Phase "DirectCourse". One record per CMX ID. Calculate both in `build_data.py` and store them in the data block as `outside`.
+**9. Databases outside this view: Connect, ANZ and DirectCourse** (reference only, not counted anywhere above): a three-column table (Connect | ANZ | DirectCourse) with Databases, Contract value (with recorded coverage), Active learners, Active admins, Would be blocked by the six features, and Of which by feature. Connect = Connect client types (LMS Connect, Clinical Skills Connect, EPM Connect, Connect Partner) that are still to migrate under the same scope rules. ANZ = databases still to migrate with Phase "ANZ TBD" or country Australia / New Zealand (excluded from all dashboard counts; Connect excludes ANZ so columns do not overlap). DirectCourse = databases with Phase "DirectCourse". One record per CMX ID. Calculate both in `build_data.py` and store them in the data block as `outside`.
 
 ## Behaviour and quality requirements
 
