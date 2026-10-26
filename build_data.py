@@ -47,7 +47,7 @@ HEADERS = {
 # Otherwise these fallback rules apply; they mirror the filters used previously
 # (Phase excludes Cancel/Remove and other non-migration phases; Migration Status
 # excludes Complete, NA, Net New, TTP Cutover and Handoff to AM).
-EXCLUDE_PHASE = {"Cancel/Remove", "Cancelled", "Internal", "NA", "Data Moved to CLH", "DirectCourse", "REVIEW"}
+EXCLUDE_PHASE = {"Cancel/Remove", "Cancelled", "Internal", "NA", "Data Moved to CLH", "DirectCourse"}
 EXCLUDE_STATUS = {"Complete", "NA", "Net New", "TTP Cutover", "Handoff to AM"}
 REPORTED_STATUS = ["Complete", "Net New", "TTP Cutover"]
 EXCLUDE_CLIENT_TYPE = {"Workforce Development", "Internal MCS Site",
@@ -165,8 +165,6 @@ def main():
                  if str(r[c["phase"]] or "").strip() not in EXCLUDE_PHASE
                  and str(r[c["status"]] or "").strip() not in EXCLUDE_STATUS
                  and r[c["account"]]]
-    ex["REVIEW"] = sum(1 for r in scope if str(r[c["phase"]] or "").strip() == "REVIEW")
-    scope = [r for r in scope if str(r[c["phase"]] or "").strip() != "REVIEW"]
     ex["After filter"] = len(scope)
 
     def canceled(r):

@@ -26,7 +26,7 @@ Columns used: Account, ECR ID, Database Name, CMX ID, Contract Value, Phase, Mig
 1. **Unit:** one record per CMX ID (one row per database). Skip blank or placeholder CMX IDs (NULL, N/A, NA, New Customer, TTP Cut Over, TTP Only). If a CMX ID repeats, keep the first.
 2. **Workbook filters:** if the main tab has Excel AutoFilter criteria set, apply exactly those (compare trimmed values; respect "blanks" being allowed).
 3. **Otherwise use these fallback rules,** which mirror the filters used previously:
-   - Exclude Phase: Cancel/Remove, Cancelled, Internal, NA, Data Moved to CLH, DirectCourse, REVIEW (REVIEW is also excluded when Excel filters are used).
+   - Exclude Phase: Cancel/Remove, Cancelled, Internal, NA, Data Moved to CLH, DirectCourse.
    - Exclude Migration Status: Complete, NA, Net New, TTP Cutover, Handoff to AM.
 4. **Also exclude:**
    - Databases marked Canceled/Cancelled under CLH Customer Account Status or Change Type.
