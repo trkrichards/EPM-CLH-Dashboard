@@ -52,6 +52,7 @@ EXCLUDE_STATUS = {"Complete", "NA", "Net New", "TTP Cutover", "Handoff to AM"}
 REPORTED_STATUS = ["Complete", "Net New", "TTP Cutover"]
 EXCLUDE_CLIENT_TYPE = {"Workforce Development", "Internal MCS Site",
                        "Connect Partner", "EPM Connect", "LMS Connect", "Clinical Skills Connect"}
+ANZ_COUNTRIES = {"Australia", "New Zealand"}
 CONNECT_TYPES = {"Connect Partner", "EPM Connect", "LMS Connect", "Clinical Skills Connect"}
 ID_PLACEHOLDERS = {"", "NULL", "N/A", "NA", "NONE", "-", "NEW CUSTOMER", "TTP CUT OVER", "TTP ONLY"}
 
@@ -172,6 +173,16 @@ def main():
 
     ex["Canceled"] = sum(1 for r in scope if canceled(r))
     scope = [r for r in scope if not canceled(r)]
+
+    # ANZ: Phase "ANZ TBD" or country Australia / New Zealand. Excluded from the dashboard
+    # counts and summarised separately in section 9.
+    def is_anz(r):
+        return (str(r[c["phase"]] or "").strip() == "ANZ TBD"
+                or str(r[c["country"]] or "").strip() in ANZ_COUNTRIES)
+
+    anz_rows = [r for r in scope if is_anz(r)]
+    ex["ANZ"] = len(anz_rows)
+    scope = [r for r in scope if not is_anz(r)]
     connect_rows = [r for r in scope if (r[c["client_type"]] or "").strip() in CONNECT_TYPES]
     ex["Client type"] = sum(1 for r in scope if (r[c["client_type"]] or "").strip() in EXCLUDE_CLIENT_TYPE)
     scope = [r for r in scope if (r[c["client_type"]] or "").strip() not in EXCLUDE_CLIENT_TYPE]
@@ -229,6 +240,7 @@ def main():
 
     outside = {
         "connect": summarize(connect_rows),
+        "anz": summarize(anz_rows),
         "directcourse": summarize([r for r in rows if str(r[c["phase"]] or "").strip() == "DirectCourse" and r[c["account"]]]),
     }
 
